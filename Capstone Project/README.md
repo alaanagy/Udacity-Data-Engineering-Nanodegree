@@ -1,105 +1,54 @@
-#  Data Modeling with Postgres
+# Data Engineering Capstone Project
 
-## Introduction 
+## Immigration to USA
 
-A startup called Sparkify wants to analyze the data they've been collecting on songs and user activity on their new music streaming app.
-The analytics team is particularly interested in understanding what songs users are listening to.
-Currently, they don't have an easy way to query their data, which resides in a directory of JSON logs on user activity on the app, as well as a directory
-with JSON metadata on the songs in their app.
-we will create a Postgres database with tables designed to optimize queries and build an ETL pipeline using Python.
+### Project Summary
 
+We will work with four datasets to complete the project. The main dataset will include data on immigration to the United States, and supplementary datasets will include data on airport codes, U.S. city demographics, and temperature data. 
 
-## Project Datasets
+### Instructions
 
-we will work on 2 datasets in this project, song dataset and log dataset, so we will explain a breif on each of them in the upcoming lines.
-
-### Song Dataset
-It is a subset of real data from the [Million Song Dataset](https://labrosa.ee.columbia.edu/millionsong/).Each file is in JSON format and contains metadata
-about a song and the artist of that song. The files are partitioned by the first three letters of each song's track ID. For example, here are file paths to
-two files in this dataset.
-
-- song_data/A/B/C/TRABCEI128F424C983.json
-- song_data/A/A/B/TRAABJL12903CDCF1A.json
-
-And below is an example of what a single song file, TRAABJL12903CDCF1A.json, looks like.
-```
-{
-    "num_songs": 1,
-    "artist_id": "ARJIE2Y1187B994AB7",
-    "artist_latitude": null,
-    "artist_longitude": null,
-    "artist_location": "",
-    "artist_name": "Line Renaud",
-    "song_id": "SOUPIRU12A6D4FA1E1",
-    "title": "Der Kleine Dompfaff",
-    "duration": 152.92036,
-    "year": 0
-}
-```
-
-### Log Dataset
-
-The second dataset consists of log files in JSON format where each file covers the users activities over a given day.
- For example, here are filepaths to two files in this dataset.
- 
-- log_data/2018/11/2018-11-12-events.json
-- log_data/2018/11/2018-11-13-events.json
+- Step 1: Scope the Project and Gather Data
+- Step 2: Explore and Assess the Data
+- Step 3: Define the Data Model
+- Step 4: Run ETL to Model the Data
+- Step 5: Complete Project Write Up
 
 
-And below is an example of what the data in a log file, 2018-11-12-events.json, looks like.
-![image](https://user-images.githubusercontent.com/49722916/201693400-7f50ae13-69e3-4644-9488-5504cf326e14.png)
-
-## Schema for Song Play Analysis
-
-### Fact Table
-1. **songplays** - records in log data associated with song plays i.e. records with page NextSong
-    - songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
+### Datasets
 
 
-### Dimension Tables
+* **I94 Immigration Data**: This data comes from the US National Tourism and Trade Office and includes the contents of the i94 form on entry to the united states. A data dictionary is included in the workspace.
+    * _countries.csv_ : table containing country codes used in the dataset, extracted from the data dictionary
+    * _i94portCodes.csv_: table containing city codes used in the dataset, extracted from the data dictionary
+  The dataset can be found [here.](https://travel.trade.gov/research/reports/i94/historical/2016.html)
 
-2. **users** - users in the app
-    - user_id, first_name, last_name, gender, level
-
-3. **songs** - songs in music database
-    - song_id, title, artist_id, year, duration
-
-4. **artists** - artists in music database
-    - artist_id, name, location, latitude, longitude
-   
-5. **time** - timestamps of records in songplays broken down into specific units
-    - start_time, hour, day, week, month, year, weekday
+* **World Temperature Data**: This dataset comes from Kaggle and includes the temperatures of various cities in the world fomr 1743 to 2013.
+  The dataset can be found [here.](https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data)
+* **U.S. City Demographic Data**: This data comes from OpenSoft. It contains information about the demographics of all US cities and census-designated places with a population greater or equal to 65,000 and comes from the US Census Bureau's 2015 American Community Survey.
+  The dataset can be found [here.](https://public.opendatasoft.com/explore/dataset/us-cities-demographics/export/)
+* **Airport Code Table**: This is a simple table of airport codes and corresponding cities.
+  The dataset can be found [here.](https://datahub.io/core/airport-codes#data)
 
 
-And below is the ERD of our databse.
+### Accessing the Data
+Some of the data is already uploaded to the workspace, which you'll see in the navigation pane within Jupyter Lab. The immigration data and the global temperate data is in an attached disk.
+
+#### Immigration Data
+You can access the immigration data in a folder with the following path: ../../data/18-83510-I94-Data-2016/. There's a file for each month of the year. An example file name is i94_apr16_sub.sas7bdat. Each file has a three-letter abbreviation for the month name. So a full file path for June would look like this: ../../data/18-83510-I94-Data-2016/i94_jun16_sub.sas7bdat. Below is what it would look like to import this file into pandas.
+**Note: these files are large, so you'll have to think about how to process and aggregate them efficiently.**
+
+![image](https://user-images.githubusercontent.com/49722916/232233718-defe92d1-507c-4837-bdcf-499dc25ed6d9.png)
+
+The most important decision for modeling with this data is thinking about the level of aggregation. Do you want to aggregate by airport by month? Or by city by year? This level of aggregation will influence how you join the data with other datasets. There isn't a right answer, it all depends on what you want your final dataset to look like.
+
+#### Temperature Data
+
+You can access the temperature data in a folder with the following path: ../../data2/. There's just one file in that folder, called GlobalLandTemperaturesByCity.csv. Below is how you would read the file into a pandas dataframe.
+
+![image](https://user-images.githubusercontent.com/49722916/232233861-47897d07-0d44-4751-835c-f0893a7d7131.png)
 
 
-![image](https://user-images.githubusercontent.com/49722916/201710786-b957669f-5087-4c95-b277-c19404d23857.png)
-  
-  
-## Description of Files
+#### Files provided:
 
-- **sql_queries.py**  has all the queries needed to both create and drop tables for the database and a SQL query to 
-get song_id and artist_id from other tables since they are not provided in logs dataset. 
-
-- **create_tables.py**  creates the database, the connection and used for creation and Dropping all the tables written in sql_queries.py file .
-
-- **etl.ipynb**   reads and processes a single file from song_data and log_data and loads the data into our tables. This notebook
-contains detailed instructions on the ETL process for each of the tables.
-
-- **etl.py**  reads and processes files from song_data and log_data and loads them into our created tables. 
-we can fill out this file using our work during etl.ipynb notebook.
-
-
-- **test.ipynb**  displays the first few rows of each table to let us check our database, contains some tests such as testing column data types,
-primary key constraints and not-null constraints as well look for on-conflict clauses wherever required.
-
-
-
-
-
-
-
-
-
-
+All the project details and analysis will be in the project notebook.
